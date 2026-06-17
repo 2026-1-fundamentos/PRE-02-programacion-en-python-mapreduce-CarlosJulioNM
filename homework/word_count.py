@@ -118,7 +118,39 @@ def wordcount_reducer(pairs_sequence):
         else:
             result.append((key, value))
     return result
+def copy_raw_files_to_input_folder(n=1000):
+    """Inicializa la carpeta de entrada y copia los archivos crudos numerados."""
+    # Asegura que la carpeta destino exista limpia
+    directory = "files/input"
+    if os.path.exists(directory):
+        for file in glob.glob(f"{directory}/*"):
+            os.remove(file)
+    else:
+        os.makedirs(directory)
+        
+    # Copia los archivos de files/raw a files/input n veces
+    for file in glob.glob("files/raw/*"):
+        with open(file, "r", encoding="utf-8") as f:
+            text = f.read()
 
+        for i in range(1, n + 1):
+            raw_filename_with_extension = os.path.basename(file)
+            raw_filename_without_extension = os.path.splitext(
+                raw_filename_with_extension
+            )[0]
+            new_filename = f"{raw_filename_without_extension}_{i}.txt"
+            with open(f"files/input/{new_filename}", "w", encoding="utf-8") as f2:
+                f2.write(text)
+
+
+def run_job(input_directory, output_directory):
+    """Ejecuta el flujo de MapReduce usando el mapper y reducer de wordcount."""
+    mapreduce(
+        mapper=wordcount_mapper,
+        reducer=wordcount_reducer,
+        input_dir=input_directory,
+        output_dir=output_directory,
+    )
 
 if __name__ == "__main__":
     
